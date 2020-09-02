@@ -1,5 +1,5 @@
-#include <time/time_interval.h>
 #include <time/time_stamp.h>
+#include "interval.h"
 
 namespace bbr
 {

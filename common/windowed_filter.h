@@ -30,7 +30,7 @@ class WindowedFilter
     if (estimates_[0].sample == zero_value_ ||
         Compare()(new_sample, estimates_[0].sample) ||
         new_time - estimates_[2].time > window_length_) {
-      Reset(new_sample, new_time);
+      reset(new_sample, new_time);
       return;
     }
 

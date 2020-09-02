@@ -1,5 +1,5 @@
-#ifndef BBR_COMMON_TIME_INTERVAL_H_
-#define BBR_COMMON_TIME_INTERVAL_H_
+#ifndef BBR_TIME_INTERVAL_H_
+#define BBR_TIME_INTERVAL_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -7,6 +7,7 @@
 #include <limits>
 #include <math.h>
 #include <string>
+#include <common/rate.h>
 
 namespace bbr
 {
@@ -15,7 +16,7 @@ namespace time
 class TimeDelta
 {
 public:
-     explicit TimeDelta(int64_t us)
+     explicit TimeDelta(int64_t us = std::numeric_limits<std::int64_t>::max())
         :delta_us_(us)
     {}
     int64_t value() const {
@@ -115,9 +116,29 @@ inline TimeDelta operator / (const TimeDelta d1,const T d2)
 //允许使用: 
 //      1ms / 1us = 1000;
 //      1ms / 3ms = 0.33333
-inline double operator / (const TimeDelta d1,const TimeDelta d2)
+inline double operator / (const TimeDelta d1, const TimeDelta d2)
 {
     return d1.value() * 1.0 / d2.value();
+}
+
+inline common::BitRate operator / (const size_t bytes, const time::TimeDelta dt)
+{
+    using namespace time;
+    return common::BitRate(static_cast<int64_t>(bytes * 8 / (dt / time::TimeDelta(1*1000*1000))));
+}
+
+inline time::TimeDelta operator / (const size_t bytes, const common::BitRate bps)
+{
+    using namespace time;
+    return time::TimeDelta(1*1000*1000) * (bytes * 8.0f / bps.value());
+}
+
+//速度 * 时间间隔 = 比特数
+inline size_t operator * (const common::BitRate d1, const time::TimeDelta dt)
+{
+    using namespace time;
+    //return static_cast<size_t>(std::lround(d1.value() * (dt / 1_sec)));
+    return static_cast<size_t>(d1.value() * (dt/time::TimeDelta(1*1000*1000)) + 0.5);
 }
 
 //user-defined literals 

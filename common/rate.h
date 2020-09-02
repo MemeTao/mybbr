@@ -7,7 +7,6 @@
 #include <math.h>
 #include <type_traits>
 #include <string>
-#include <time/time_interval.h>
 
 namespace bbr
 {
@@ -79,7 +78,7 @@ template<typename T>
 inline BitRate operator - (const BitRate d1,const T d2)
 {
     static_assert(!std::is_integral<T>::value,"1_ms - 1 is not allowed"); 
-    return DataRate(d1.value() - d2.value());
+    return BitRate(d1.value() - d2.value());
 }
 
 template<typename T>
@@ -88,7 +87,7 @@ inline BitRate operator * (const BitRate d1,const T d2)
     //不允许 3_bps * 2_bps 等乱七八糟的操作
     static_assert(std::is_integral<T>::value |
             std::is_floating_point<T>::value,"integral or float is required");
-    return DataRate(static_cast<int64_t>(d1.value() * d2));
+    return BitRate(static_cast<int64_t>(d1.value() * d2));
 }
 
 
@@ -99,7 +98,7 @@ inline BitRate operator / (const BitRate d1,const T d2)
             std::is_floating_point<T>::value, "integral or float is required"); 
     BitRate ret(BitRate::positive_infinity().value());
     //ret = DataRate(std::lround(d1.value() * 1.0 / d2));
-    ret = DataRate(static_cast<int64_t>(d1.value()*1.0/d2 + 0.5));
+    ret = BitRate(static_cast<int64_t>(d1.value()*1.0/d2 + 0.5));
     return ret;
 }
 //允许使用: 
@@ -109,26 +108,6 @@ inline double operator / (const BitRate d1, const BitRate d2)
     return d1.value() * 1.0 / d2.value();
 }
 
-
-inline common::BitRate operator / (const size_t bytes, const time::TimeDelta dt)
-{
-    using namespace time;
-    return common::BitRate(static_cast<int64_t>(bytes * 8 / (dt / 1_sec)));
-}
-
-inline time::TimeDelta operator / (const size_t bytes, const BitRate bps)
-{
-    using namespace time;
-    return 1_sec * (bytes * 8.0f / bps.value());
-}
-
-//速度 * 时间间隔 = 比特数
-inline size_t operator * (const BitRate d1,const time::TimeDelta dt)
-{
-    using namespace time;
-    //return static_cast<size_t>(std::lround(d1.value() * (dt / 1_sec)));
-    return static_cast<size_t>(d1.value() * (dt/1_sec) + 0.5);
-}
 
 namespace rate
 {

@@ -2,7 +2,8 @@
 #define COMMON_TIME_STAMP_H_
 #include <string>
 #include <chrono>
-#include <time/time_interval.h>
+
+#include "interval.h"
 
 namespace bbr
 {
@@ -33,6 +34,12 @@ public:
     inline int64_t microseconds() const
     {
         return microseconds_;
+    }
+
+    Timestamp& operator += (const TimeDelta dt)
+    {
+        microseconds_ += dt.value();
+        return *this;
     }
 
     std::string to_string(bool show_microseconds = true) const;
