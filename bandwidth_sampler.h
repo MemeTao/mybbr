@@ -86,7 +86,7 @@ private:
 
 struct CongestionEventSample {
     // The maximum bandwidth sample from all acked packets.
-    // QuicBandwidth::Zero() if no samples are available.
+    // QuicBandwidth::Invalid() if no samples are available.
     common::BandWidth sample_max_bandwidth;
     // Whether |sample_max_bandwidth| is from a app-limited sample.
     bool sample_is_app_limited = false;
@@ -134,11 +134,11 @@ class BandwidthSampler
     };
     struct AckPoint
     {
-        time::Timestamp ack_time;
+        time::Timestamp ack_time = time::Timestamp::negative_infinity();
         size_t total_bytes_acked = 0;
     };
 
-    class RecentAckPoints
+    class RecentAckPoints //TODO: initializing ack_points[2]
     {
     public:
         void update(time::Timestamp ack_time, uint64_t total_bytes_acked)
@@ -177,7 +177,10 @@ public:
             const std::vector<LostPacket>& lost_pkts,
             common::BandWidth max_bw, common::BandWidth estimated_bw_upper_bound,
             int round_count);
+    void on_pkt_neutered(uint64_t seq_no);
+    void remove_obsolete_pkts(uint64_t up_to); //[0, up_to)
     void on_app_limited();
+    bool is_app_limited();
 private:
     SendTimeState on_pkt_lost(uint64_t seq_no, size_t bytes);
 

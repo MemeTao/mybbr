@@ -124,13 +124,13 @@ inline double operator / (const TimeDelta d1, const TimeDelta d2)
 inline common::BitRate operator / (const size_t bytes, const time::TimeDelta dt)
 {
     using namespace time;
-    return common::BitRate(static_cast<int64_t>(bytes * 8 / (dt / time::TimeDelta(1*1000*1000))));
+    return common::BitRate(static_cast<int64_t>(bytes * 1.0 / dt.value() * 8 * 1000 * 1000));
 }
 
 inline time::TimeDelta operator / (const size_t bytes, const common::BitRate bps)
 {
     using namespace time;
-    return time::TimeDelta(1*1000*1000) * (bytes * 8.0f / bps.value());
+    return time::TimeDelta(1*1000*1000) * (bytes * 1.0 / bps.value() * 8);
 }
 
 //速度 * 时间间隔 = 比特数
@@ -138,7 +138,7 @@ inline size_t operator * (const common::BitRate d1, const time::TimeDelta dt)
 {
     using namespace time;
     //return static_cast<size_t>(std::lround(d1.value() * (dt / 1_sec)));
-    return static_cast<size_t>(d1.value() * (dt/time::TimeDelta(1*1000*1000)) + 0.5);
+    return static_cast<size_t>(d1.value() * (dt / time::TimeDelta(1*1000*1000)) + 0.5);
 }
 
 //user-defined literals 

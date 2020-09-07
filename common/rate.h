@@ -90,9 +90,14 @@ inline BitRate operator * (const BitRate d1,const T d2)
     return BitRate(static_cast<int64_t>(d1.value() * d2));
 }
 
+template<typename T>
+inline BitRate operator * (const T d2, const BitRate d1)
+{
+    return d1 * d2;
+}
 
 template<typename T>
-inline BitRate operator / (const BitRate d1,const T d2)
+inline BitRate operator / (const BitRate d1, const T d2)
 {
     static_assert(std::is_integral<T>::value |
             std::is_floating_point<T>::value, "integral or float is required"); 

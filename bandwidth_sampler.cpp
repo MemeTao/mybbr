@@ -120,7 +120,8 @@ CongestionEventSample BandwidthSampler::on_congestion_event(time::Timestamp ack_
             event_sample.sample_rtt = std::min(event_sample.sample_rtt, sample.rtt);
         }
         //get maximum bandwidth
-        if (sample.bandwidth.is_valid() && sample.bandwidth > event_sample.sample_max_bandwidth) {
+        if (sample.bandwidth.is_valid() && (!event_sample.sample_max_bandwidth.is_valid()
+                || sample.bandwidth > event_sample.sample_max_bandwidth)) {
             event_sample.sample_max_bandwidth = sample.bandwidth;
             event_sample.sample_is_app_limited = sample.state_at_send.is_app_limited;
         }
@@ -269,10 +270,33 @@ bool BandwidthSampler::choose_a0(size_t total_bytes_acked, AckPoint& point)
     return true;
 }
 
+void BandwidthSampler::on_pkt_neutered(uint64_t seq_no)
+{
+    auto iter = state_map_.find(seq_no);
+    if(iter == state_map_.end()) {
+        return;
+    }
+    total_bytes_neutered_ += iter->second.bytes;
+    state_map_.erase(iter);
+}
+//[0, up_to)
+void BandwidthSampler::remove_obsolete_pkts(uint64_t up_to)
+{
+    auto iter = state_map_.lower_bound(up_to);
+    if(iter != state_map_.end()) {
+        state_map_.erase(state_map_.begin(), iter);
+    }
+}
+
 void BandwidthSampler::on_app_limited()
 {
     is_app_limited_ = true;
     end_of_app_limited_phase_ = last_sent_packet_;
+}
+
+bool BandwidthSampler::is_app_limited()
+{
+    return is_app_limited_;
 }
 
 void BandwidthSampler::connection_state_to_sent_state(
