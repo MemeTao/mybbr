@@ -62,7 +62,7 @@ inline bool operator > (const BitRate d1,const BitRate d2)
 
 inline bool operator >= (const BitRate d1,const BitRate d2)
 {
-    return d1.value() > d2.value();
+    return d1.value() >= d2.value();
 }
 
 template<typename T>
@@ -112,7 +112,6 @@ inline double operator / (const BitRate d1, const BitRate d2)
 {
     return d1.value() * 1.0 / d2.value();
 }
-
 
 namespace rate
 {

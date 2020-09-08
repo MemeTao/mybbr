@@ -55,7 +55,7 @@ Timestamp Timestamp::negative_infinity()
     return Timestamp(std::numeric_limits<int64_t>::min());
 }
 
-std::string Timestamp::to_string(bool show_microseconds)const 
+std::string Timestamp::to_str(bool show_microseconds)const
 {
     char buf[32] = {0};
     time_t seconds = static_cast<time_t>(microseconds_ / kMicroSecondsPerSecond);

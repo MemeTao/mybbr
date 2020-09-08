@@ -5,7 +5,7 @@ namespace bbr
 {
 namespace time
 { 
-std::string TimeDelta::to_log()const
+std::string TimeDelta::to_str()const
 {
     std::string log;
     if(delta_us_ == std::numeric_limits<int64_t>::max()){

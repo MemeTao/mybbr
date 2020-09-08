@@ -27,7 +27,7 @@ public:
         return value() != positive_infinity().value()
             && value() != negative_infinity().value();
     }
-    std::string to_log()const;
+    std::string to_str()const;
     static TimeDelta positive_infinity()
     {
         return TimeDelta(std::numeric_limits<std::int64_t>::max());
@@ -91,7 +91,7 @@ inline TimeDelta operator - (const TimeDelta d1,const T d2)
 }
 
 template<typename T>
-inline TimeDelta operator * (const TimeDelta d1,const T d2)
+inline TimeDelta operator * (const TimeDelta d1, const T d2)
 {
     //不允许 3ms * 2us 等乱七八糟的操作
     //只可以 3ms * 2 = 6ms
@@ -102,10 +102,16 @@ inline TimeDelta operator * (const TimeDelta d1,const T d2)
 }
 
 template<typename T>
+inline TimeDelta operator * (const T d2, const TimeDelta d1)
+{
+    return d1 * d2;
+}
+
+template<typename T>
 inline TimeDelta operator / (const TimeDelta d1,const T d2)
 {
-    static_assert(std::is_integral<T>::value 
-            || std::is_floating_point<T>::value, "integral or float is required"); 
+    static_assert(std::is_integral<T>::value
+            || std::is_floating_point<T>::value, "integral or float is required");
     TimeDelta ret(TimeDelta::positive_infinity().value());
     //XXX:是否该替使用者考虑除数为0的问题
     //除数为0，就让它奔溃好了
@@ -139,6 +145,11 @@ inline size_t operator * (const common::BitRate d1, const time::TimeDelta dt)
     using namespace time;
     //return static_cast<size_t>(std::lround(d1.value() * (dt / 1_sec)));
     return static_cast<size_t>(d1.value() * (dt / time::TimeDelta(1*1000*1000)) + 0.5);
+}
+
+inline size_t operator * (const time::TimeDelta dt, const common::BitRate d1)
+{
+    return d1 * dt;
 }
 
 //user-defined literals 

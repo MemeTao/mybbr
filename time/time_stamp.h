@@ -42,7 +42,7 @@ public:
         return *this;
     }
 
-    std::string to_string(bool show_microseconds = true) const;
+    std::string to_str(bool show_microseconds = true) const;
 
     static Timestamp now(Type since_power_up = kSincePowerup);
     static Timestamp positive_infinity();
