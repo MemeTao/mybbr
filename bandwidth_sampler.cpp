@@ -14,7 +14,7 @@ uint64_t MaxAckHeightTracker::update(common::BandWidth bw,
     }
 
     // Compute how many bytes are expected to be delivered, assuming bw is correct.
-    size_t expected_bytes_acked = bw * (ack_time - aggregation_epoch_start_time_);
+    size_t expected_bytes_acked = bw * (ack_time - aggregation_epoch_start_time_) / 8;
     // Reset the current aggregation epoch as soon as the ack arrival rate is less
     // than or equal to the max bandwidth.
     if (aggregation_epoch_bytes_ <= threshold_ * expected_bytes_acked) {
@@ -305,5 +305,4 @@ void BandwidthSampler::connection_state_to_sent_state(
     s2 = s1.state;
     s2.is_valid = true;
 }
-
 }
