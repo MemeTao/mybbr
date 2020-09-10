@@ -69,6 +69,9 @@ struct Bbrparams
 
     float startup_cwnd_gain = 2.885;
     float startup_pacing_gain = 2.885;
+
+    float drain_cwnd_gain = 2.885;
+    float drain_pacing_gain = 1.0 / 2.885;
 };
 
 // Information that are meaningful only when Bbr2Sender::OnCongestionEvent is

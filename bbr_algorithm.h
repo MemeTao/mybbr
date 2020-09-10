@@ -15,6 +15,7 @@ public:
     Bbrparams& params() {
         return params_;
     }
+    size_t min_cwnd() const;
 private:
     Bbrparams params_;
 };

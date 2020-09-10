@@ -1,0 +1,42 @@
+#ifndef BBR_DRAIN_H_
+#define BBR_DRAIN_H_
+
+#include <vector>
+#include <common/rate.h>
+#include <time/time_stamp.h>
+#include <bbr_mode.h>
+
+namespace bbr
+{
+class BbrAlgorithm;
+class BbrModel;
+struct AckedPacket;
+struct LostPacket;
+struct BbrCongestionEvent;
+class BbrDrainMode
+{
+public:
+    BbrDrainMode(BbrAlgorithm* bbr,  BbrModel* model);
+
+    bool is_probing() const {
+        return false;
+    }
+    size_t cwnd_lower_bound() const;
+
+    BbrMode OnCongestionEvent(
+        size_t prior_inflight,
+        time::Timestamp at_time,
+        const std::vector<AckedPacket>& acked_packets,
+        const std::vector<LostPacket>& lost_packets,
+        const BbrCongestionEvent& congestion_event);
+
+private:
+    size_t drain_target() const;
+
+private:
+    BbrAlgorithm* bbr_;
+    BbrModel* model_;
+};
+
+}
+#endif
