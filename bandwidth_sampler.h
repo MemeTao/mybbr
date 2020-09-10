@@ -86,8 +86,8 @@ private:
 
 struct CongestionEventSample {
     // The maximum bandwidth sample from all acked packets.
-    // QuicBandwidth::Invalid() if no samples are available.
-    common::BandWidth sample_max_bandwidth;
+    // zero if no samples are available.
+    common::BandWidth sample_max_bandwidth{0};
     // Whether |sample_max_bandwidth| is from a app-limited sample.
     bool sample_is_app_limited = false;
     // The minimum rtt sample from all acked packets.
@@ -107,7 +107,7 @@ struct CongestionEventSample {
 };
 
 struct BandwidthSample {
-    // The bandwidth at that particular sample. 'Invalid' if no valid bandwidth sample
+    // The bandwidth at that particular sample. 'Zero' if no valid bandwidth sample
     // is available.
     common::BandWidth bandwidth;
 
@@ -181,6 +181,9 @@ public:
     void remove_obsolete_pkts(uint64_t up_to); //[0, up_to)
     void on_app_limited();
     bool is_app_limited();
+
+    size_t total_bytes_acked() const { return total_bytes_acked_;}
+    size_t total_bytes_lost() const { return total_bytes_lost_;}
 private:
     SendTimeState on_pkt_lost(uint64_t seq_no, size_t bytes);
 

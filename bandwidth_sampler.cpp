@@ -120,8 +120,8 @@ CongestionEventSample BandwidthSampler::on_congestion_event(time::Timestamp ack_
             event_sample.sample_rtt = std::min(event_sample.sample_rtt, sample.rtt);
         }
         //get maximum bandwidth
-        if (sample.bandwidth.is_valid() && (!event_sample.sample_max_bandwidth.is_valid()
-                || sample.bandwidth > event_sample.sample_max_bandwidth)) {
+        if (sample.bandwidth.is_valid() &&
+                sample.bandwidth > event_sample.sample_max_bandwidth) {
             event_sample.sample_max_bandwidth = sample.bandwidth;
             event_sample.sample_is_app_limited = sample.state_at_send.is_app_limited;
         }

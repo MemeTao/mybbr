@@ -89,7 +89,7 @@ bbr::SendTimeState BandwidthSamplerTest::lose_pkt(uint64_t seq_no)
     auto sample = sampler_.on_congestion_event(clock_, {}, {lost_pkt},
             max_bw_, bw_upper_bound_, round_count_);
     EXPECT_TRUE(sample.last_packet_send_state.is_valid);
-    EXPECT_FALSE(sample.sample_max_bandwidth.is_valid());
+    EXPECT_EQ(sample.sample_max_bandwidth, 0_mbps);
     EXPECT_FALSE(sample.sample_rtt.is_valid());
     return sample.last_packet_send_state;
 }
