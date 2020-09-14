@@ -18,8 +18,9 @@ public:
     void update(time::TimeDelta sample_rtt, time::Timestamp at_time);
     void force_update(time::TimeDelta sample_rtt, time::Timestamp at_time);
 
-    time::TimeDelta min_rtt() { return min_rtt_;}
-    time::Timestamp timestamp() {return min_rtt_timestamp_;}
+    time::TimeDelta min_rtt() const { return min_rtt_;}
+    time::Timestamp timestamp() const {return min_rtt_timestamp_;}
+
 private:
     time::TimeDelta min_rtt_;
     time::Timestamp min_rtt_timestamp_;
@@ -179,53 +180,38 @@ public:
 
     bool maybe_min_rtt_expired(const BbrCongestionEvent& congestion_event);
 
-    time::TimeDelta min_rtt() const {
-        return rtt_filter_.min_rtt();
-    }
+    time::TimeDelta min_rtt() const { return rtt_filter_.min_rtt();}
 
-    size_t bdp(common::BandWidth bw) {
-        return bw * rtt_filter_.min_rtt();
-    }
-    common::BandWidth max_bw() const {
-        return bandwidth_filter_.get();
-    }
-    common::BandWidth bw_lower_bound() const {
-        return bw_lower_bound_;
-    }
-    size_t loss_events_in_round() const {
-        return lose_event_in_round_;
-    }
+    common::BandWidth max_bw() const{ return bandwidth_filter_.get();}
 
-    size_t inflight_lo() const {
-        return inflight_lo_;
-    }
+    size_t bdp(common::BandWidth bw) const { return bw * min_rtt();}
 
-    void cap_inflight_lo(size_t cap);
+    common::BandWidth bw_lower_bound() const { return bw_lower_bound_;}
 
-    size_t inflight_hi() const {
-        return inflight_hi_;
-    }
+    size_t loss_events_in_round() const{ return lose_event_in_round_;}
+
+    size_t inflight_lo() const { return inflight_lo_;}
+
+    size_t inflight_hi() const { return inflight_hi_;}
 
     size_t inflight_hi_with_headroom() const;
 
-    void set_inflight_hi(size_t inflight_hi) {
-        inflight_hi_ = inflight_hi;
-    }
-    void clear_bw_lo();
-    void clear_inflight_lo();
-    void set_pacing_gain(float gain) {
-        pacing_gain_ = gain;
-    }
-    void set_cwnd_gain(float gain) {
-        cwnd_gain_ = gain;
-    }
+    bool cwnd_limited( const BbrCongestionEvent& congestion_event) const;
 
-    void advance_bw_hi_filter() {
-        bandwidth_filter_.advance();
-    }
+public:
+    void set_inflight_hi(size_t inflight_hi){ inflight_hi_ = inflight_hi;}
+
+    void cap_inflight_lo(size_t cap);
+
+    void clear_inflight_lo();
+
+    void clear_bw_lo();
 
     void restart_round();
-    bool cwnd_limited(const BbrCongestionEvent& congestion_event);
+
+    void set_pacing_gain(float gain) { pacing_gain_ = gain;}
+    void set_cwnd_gain(float gain) { cwnd_gain_ = gain;}
+    void advance_bw_hi_filter() { bandwidth_filter_.advance();}
 
 private:
     void adapt_lower_bounds(const BbrCongestionEvent& congestion_event);
@@ -252,7 +238,8 @@ private:
     size_t inflight_hi_;
 };
 
-inline size_t bytes_inflight( const SendTimeState& send_state) {
+inline size_t bytes_inflight( const SendTimeState& send_state)
+{
     if (send_state.bytes_in_flight != 0) {
         return send_state.bytes_in_flight;
     }

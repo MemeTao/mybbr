@@ -374,7 +374,7 @@ bool BbrProbeBandwidth::is_time_to_probe_for_reno_coexistence(
     if (bbr_->params().probe_bw_probe_reno_gain > 0.0) {
         size_t target_bytes_inflight = bbr_->target_inflight();
         uint64_t reno_rounds = bbr_->params().probe_bw_probe_reno_gain *
-                             target_bytes_inflight / Bbrparams::kDefaultTCPMSS;
+                target_bytes_inflight / Bbrparams::kDefaultTCPMSS;
         rounds = std::min(rounds, reno_rounds);
     }
     bool result = cycle_.rounds_since_probe >= (rounds * probe_wait_fraction);

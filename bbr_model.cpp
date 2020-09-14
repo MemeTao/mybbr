@@ -56,6 +56,7 @@ void BbrModel::on_congestion_event(
     size_t prior_lost = sampler_.total_bytes_lost();
 
     congestion_event.event_time = at_time;
+
     if(!acked_pkts.empty()) {
         congestion_event.end_of_round_trip =
             round_counter_.on_pkt_acked(acked_pkts.rbegin()->seq_no);
@@ -105,6 +106,7 @@ void BbrModel::on_congestion_event(
         bytes_lost_in_round_ += congestion_event.bytes_lost;
         lose_event_in_round_ ++;
     }
+
     //latest_max_bw_\latest_max_infligth_bytes_ only increased within a round
     latest_max_bw_ = std::max(latest_max_bw_, sample.sample_max_bandwidth);
     latest_max_infligth_bytes_ = std::max(latest_max_infligth_bytes_,
@@ -193,7 +195,6 @@ size_t BbrModel::inflight_hi_with_headroom() const
 
 bool BbrModel::maybe_min_rtt_expired(const BbrCongestionEvent& congestion_event)
 {
-
     if(!rtt_filter_.timestamp().is_valid() || congestion_event.event_time <
             rtt_filter_.timestamp() + params_.min_rtt_win) {
         return false;
@@ -205,7 +206,7 @@ bool BbrModel::maybe_min_rtt_expired(const BbrCongestionEvent& congestion_event)
     return true;
 }
 
-bool BbrModel::cwnd_limited(const BbrCongestionEvent& congestion_event)
+bool BbrModel::cwnd_limited(const BbrCongestionEvent& congestion_event) const
 {
     size_t prior_bytes_in_flight = congestion_event.bytes_in_flight +
                                           congestion_event.bytes_acked +
