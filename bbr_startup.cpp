@@ -69,7 +69,7 @@ void BbrStartupMode::Check_excessive_losses(
             model_->is_inflight_too_high(congestion_event))
     {
         auto bdp = model_->bdp(model_->max_bw());
-        model_->set_inflight_high_bound(bdp);
+        model_->set_inflight_hi(bdp);
 
         full_bw_reached_ = true;
     }

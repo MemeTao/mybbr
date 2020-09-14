@@ -26,6 +26,10 @@ public:
         return round_trip_count_;
     }
 
+    void restart() {
+        end_of_round_trip_ = last_sent_packet_no_;
+    }
+
 private:
     uint64_t round_trip_count_ = 0;
     uint64_t last_sent_packet_no_ = std::numeric_limits<uint64_t>::max();

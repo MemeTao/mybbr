@@ -25,6 +25,7 @@ private:
     time::Timestamp min_rtt_timestamp_;
 };
 
+/* Keep max of last 1-2 cycles.*/
 class MaxBandwidthFilter
 {
 public:
@@ -65,6 +66,8 @@ struct Bbrparams
 
     uint8_t startup_full_loss_count = 8; //tcp_bbr2.c
 
+    uint8_t probe_bw_full_loss_count = 2; //quic-bbr2
+
     float loss_threshold = 0.02; //tcp_bbr2.c
 
     float startup_cwnd_gain = 2.885;
@@ -72,6 +75,37 @@ struct Bbrparams
 
     float drain_cwnd_gain = 2.885;
     float drain_pacing_gain = 1.0 / 2.885;
+
+    //probe bandwidth gains
+    //cwnd gains
+    float probe_bw_cwnd_gain = 2.0;
+
+    // Multiplier to get target inflight (as multiple of BDP) for PROBE_UP phase.
+    float probe_bw_probe_inflight_gain = 1.25;
+
+    // Pacing gains.
+    float probe_bw_probe_up_pacing_gain = 1.25;
+    float probe_bw_probe_down_pacing_gain = 0.75;
+    float probe_bw_default_pacing_gain = 1.0;
+
+    //amount of randomness to inject in round counting for Reno-coexistence.
+    uint8_t bw_probe_rand_rounds = 2; //tcp_bbr2.c
+    uint32_t bbr_bw_probe_base_us = 2 * 1000 * 1000 * 1000; // 2 sec tcp_bbr2.c
+    uint32_t bbr_bw_probe_rand_us = 1000 * 1000 * 1000; //1 sec tcp_bbr2.c
+
+    bool limit_inflight_hi_by_cwnd = false;
+
+    float inflight_hi_headroom_fraction = 0.01; //tcp_bbr2:15%, quic_bbr2: 1%
+
+    time::TimeDelta min_rtt_win {10 * 1000 * 1000};
+
+    const static size_t kDefaultTCPMSS = 1460;
+
+    uint8_t probe_bw_probe_max_rounds = 63;
+
+    // Multiplier to get Reno-style probe epoch duration as: k * BDP round trips.
+    // If zero, disables Reno-style BDP-scaled coexistence mechanism.
+    float probe_bw_probe_reno_gain = 1.0;
 };
 
 // Information that are meaningful only when Bbr2Sender::OnCongestionEvent is
@@ -123,6 +157,8 @@ struct BbrCongestionEvent
 class BbrModel
 {
 public:
+    const static size_t kDefaultInflightBytes = std::numeric_limits<size_t>::max();
+public:
     BbrModel(const Bbrparams& bbr_params,
             time::TimeDelta init_min_rtt,
             time::Timestamp init_min_rtt_timestamp,
@@ -141,6 +177,12 @@ public:
 
     bool is_inflight_too_high( const BbrCongestionEvent& congestion_event);
 
+    bool maybe_min_rtt_expired(const BbrCongestionEvent& congestion_event);
+
+    time::TimeDelta min_rtt() const {
+        return rtt_filter_.min_rtt();
+    }
+
     size_t bdp(common::BandWidth bw) {
         return bw * rtt_filter_.min_rtt();
     }
@@ -151,19 +193,39 @@ public:
         return bw_lower_bound_;
     }
     size_t loss_events_in_round() const {
-        return lost_event_in_round_;
+        return lose_event_in_round_;
     }
 
-    void set_inflight_high_bound(size_t inflight_hi) {
-        infight_higth_bound_ = inflight_hi;
+    size_t inflight_lo() const {
+        return inflight_lo_;
     }
 
+    void cap_inflight_lo(size_t cap);
+
+    size_t inflight_hi() const {
+        return inflight_hi_;
+    }
+
+    size_t inflight_hi_with_headroom() const;
+
+    void set_inflight_hi(size_t inflight_hi) {
+        inflight_hi_ = inflight_hi;
+    }
+    void clear_bw_lo();
+    void clear_inflight_lo();
     void set_pacing_gain(float gain) {
         pacing_gain_ = gain;
     }
     void set_cwnd_gain(float gain) {
         cwnd_gain_ = gain;
     }
+
+    void advance_bw_hi_filter() {
+        bandwidth_filter_.advance();
+    }
+
+    void restart_round();
+    bool cwnd_limited(const BbrCongestionEvent& congestion_event);
 
 private:
     void adapt_lower_bounds(const BbrCongestionEvent& congestion_event);
@@ -180,14 +242,14 @@ private:
     BandwidthSampler sampler_;
 
     size_t bytes_lost_in_round_ = 0;
-    size_t lost_event_in_round_ = 0;
+    size_t lose_event_in_round_ = 0;
 
     common::BandWidth latest_max_bw_;
     size_t latest_max_infligth_bytes_ = 0;
 
     common::BandWidth bw_lower_bound_;
-    size_t inflight_lower_bound_;
-    size_t infight_higth_bound_;
+    size_t inflight_lo_;
+    size_t inflight_hi_;
 };
 
 inline size_t bytes_inflight( const SendTimeState& send_state) {

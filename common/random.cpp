@@ -1,7 +1,8 @@
-#include <rtc/common/random.h>
+#include <common/random.h>
 #include <math.h>
 
-namespace rtc{
+namespace bbr
+{
 namespace common
 {
 Random::Random(uint64_t seed)

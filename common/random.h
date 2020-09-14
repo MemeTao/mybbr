@@ -5,8 +5,10 @@
 #include <limits>
 #include <cassert>
 
-namespace rtc{
-namespace common{
+namespace bbr
+{
+namespace common
+{
 //FIXME:修改为C++11的标准算法
 class Random{
 public:
