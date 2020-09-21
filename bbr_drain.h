@@ -21,7 +21,7 @@ public:
     bool is_probing() const {
         return false;
     }
-    size_t cwnd_lower_bound() const;
+    size_t cwnd_limit() const;
 
     BbrMode OnCongestionEvent(
         size_t prior_inflight,

@@ -91,8 +91,8 @@ struct Bbrparams
 
     //amount of randomness to inject in round counting for Reno-coexistence.
     uint8_t bw_probe_rand_rounds = 2; //tcp_bbr2.c
-    uint32_t bbr_bw_probe_base_us = 2 * 1000 * 1000 * 1000; // 2 sec tcp_bbr2.c
-    uint32_t bbr_bw_probe_rand_us = 1000 * 1000 * 1000; //1 sec tcp_bbr2.c
+    uint32_t bbr_bw_probe_base_us = 2 * 1000 * 1000; // 2 sec tcp_bbr2.c
+    uint32_t bbr_bw_probe_rand_us = 1 * 1000 * 1000; //1 sec tcp_bbr2.c
 
     bool limit_inflight_hi_by_cwnd = false;
 
@@ -222,6 +222,8 @@ private:
     float pacing_gain_;
 
     MinRttFilter rtt_filter_;
+    //The filter that tracks the maximum bandwidth over
+    //multiple recent round trips.
     MaxBandwidthFilter bandwidth_filter_;
     RoundTripCounter round_counter_;
 
@@ -230,10 +232,14 @@ private:
     size_t bytes_lost_in_round_ = 0;
     size_t lose_event_in_round_ = 0;
 
+    // Max bandwidth in the current round. Updated once per congestion event.
     common::BandWidth latest_max_bw_;
+    //current round
     size_t latest_max_infligth_bytes_ = 0;
 
+    // Max bandwidth of recent rounds. Updated once per round.
     common::BandWidth bw_lower_bound_;
+    //recent rounds
     size_t inflight_lo_;
     size_t inflight_hi_;
 };

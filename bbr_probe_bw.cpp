@@ -146,12 +146,6 @@ void BbrProbeBandwidth::enter_probe_refill(uint64_t probe_up_rounds,
     model_->restart_round();
 }
 
-void BbrProbeBandwidth::update_probe_cruise(
-        const BbrCongestionEvent& congestion_event)
-{
-    ;
-}
-
 void BbrProbeBandwidth::raise_inflight_hi()
 {
     uint64_t growth_this_round = 1 << cycle_.probe_up_rounds;
@@ -190,16 +184,17 @@ void BbrProbeBandwidth::update_probe_down(size_t prior_inflight,
     maybe_adapt_upper_bounds(congestion_event);
 
     if(is_time_to_probe_bw(congestion_event)) {
-        enter_probe_refill(0 /*probe_up_rounds=*/, congestion_event.event_time);
+        enter_probe_refill(/*probe_up_rounds=*/0, congestion_event.event_time);
         return;
     }
 
+    //FIXME: quic only
     if(has_stayed_long_enough_in_probe_down(congestion_event)) {
         enter_probe_cruise(congestion_event.event_time);
         return;
     }
 
-    const size_t inflight_with_headroom =   model_->inflight_hi_with_headroom();
+    const size_t inflight_with_headroom =  model_->inflight_hi_with_headroom();
     if (prior_inflight > inflight_with_headroom) {
         // Stay in PROBE_DOWN.
         return;

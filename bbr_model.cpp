@@ -209,8 +209,7 @@ bool BbrModel::maybe_min_rtt_expired(const BbrCongestionEvent& congestion_event)
 bool BbrModel::cwnd_limited(const BbrCongestionEvent& congestion_event) const
 {
     size_t prior_bytes_in_flight = congestion_event.bytes_in_flight +
-                                          congestion_event.bytes_acked +
-                                          congestion_event.bytes_lost;
+                congestion_event.bytes_acked + congestion_event.bytes_lost;
     return prior_bytes_in_flight >= congestion_event.prior_cwnd;
 }
 

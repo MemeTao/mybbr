@@ -30,9 +30,9 @@ BbrMode BbrDrainMode::OnCongestionEvent(
     return BbrMode::DRAIN;
 }
 
-size_t BbrDrainMode::cwnd_lower_bound() const
+size_t BbrDrainMode::cwnd_limit() const
 {
-    return model_->inflight_lower_bound();
+    return model_->inflight_lo();
 }
 
 size_t BbrDrainMode::drain_target() const

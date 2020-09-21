@@ -14,6 +14,7 @@ struct AckedPacket;
 struct LostPacket;
 struct BbrCongestionEvent;
 
+//we won't enter start-up mode more than once
 class BbrStartupMode
 {
 public:
