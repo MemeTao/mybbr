@@ -7,7 +7,7 @@
 #include <vector>
 #include <deque>
 #include <map>
-#include <time/time_stamp.h>
+#include <time/timestamp.h>
 #include <common/rate.h>
 #include <common/windowed_filter.h>
 

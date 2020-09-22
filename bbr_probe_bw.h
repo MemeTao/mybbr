@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <common/rate.h>
-#include <time/time_stamp.h>
+#include <time/timestamp.h>
 #include <bbr_mode.h>
 
 namespace bbr

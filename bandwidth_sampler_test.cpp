@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <time/time_stamp.h>
+#include <time/timestamp.h>
 #include <common/rate.h>
 #include <bandwidth_sampler.h>
 
