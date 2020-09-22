@@ -107,6 +107,10 @@ struct Bbrparams
     // Multiplier to get Reno-style probe epoch duration as: k * BDP round trips.
     // If zero, disables Reno-style BDP-scaled coexistence mechanism.
     float probe_bw_probe_reno_gain = 1.0;
+
+    //probe rtt:200ms
+    time::TimeDelta probe_rtt_duration {200 * 1000};
+    float probe_rtt_inflight_target_bdp_fraction = 0.5;
 };
 
 // Information that are meaningful only when Bbr2Sender::OnCongestionEvent is
@@ -184,7 +188,10 @@ public:
 
     common::BandWidth max_bw() const{ return bandwidth_filter_.get();}
 
-    size_t bdp(common::BandWidth bw) const { return bw * min_rtt();}
+    size_t bdp(common::BandWidth bw, float gain = 1.0) const
+    {
+        return bw * (min_rtt() * gain);
+    }
 
     common::BandWidth bw_lower_bound() const { return bw_lower_bound_;}
 
