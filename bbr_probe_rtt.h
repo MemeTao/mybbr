@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <bbr_mode.h>
-#include <bandwidth_sampler.h>
+#include <bbr_common.h>
 #include <time/timestamp.h>
 
 namespace bbr

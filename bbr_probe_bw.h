@@ -4,14 +4,13 @@
 #include <vector>
 #include <common/rate.h>
 #include <time/timestamp.h>
+#include <bbr_common.h>
 #include <bbr_mode.h>
 
 namespace bbr
 {
 class BbrAlgorithm;
 class BbrModel;
-struct AckedPacket;
-struct LostPacket;
 struct BbrCongestionEvent;
 
 class BbrProbeBandwidth

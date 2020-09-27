@@ -10,22 +10,10 @@
 #include <time/timestamp.h>
 #include <common/rate.h>
 #include <common/windowed_filter.h>
+#include <bbr_common.h>
 
 namespace bbr
 {
-struct AckedPacket
-{
-    uint64_t seq_no = 0;
-    size_t bytes = 0;
-    time::Timestamp receive_time; //the packet received by the peer
-};
-
-struct LostPacket
-{
-    uint64_t seq_no = 0;
-    size_t bytes = 0;
-};
-
 struct SendTimeState
 {
   bool is_valid = false;
