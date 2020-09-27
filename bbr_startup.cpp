@@ -11,7 +11,7 @@ BbrStartupMode::BbrStartupMode(BbrAlgorithm* bbr, BbrModel* model)
 {
 
 }
-BbrMode BbrStartupMode::OnCongestionEvent(
+BbrMode BbrStartupMode::on_congestion_event(
     size_t,
     time::Timestamp,
     const std::vector<AckedPacket>&,

@@ -11,7 +11,7 @@ BbrDrainMode::BbrDrainMode(BbrAlgorithm* bbr,  BbrModel* model)
     ;
 }
 
-BbrMode BbrDrainMode::OnCongestionEvent(
+BbrMode BbrDrainMode::on_congestion_event(
         size_t prior_inflight,
         time::Timestamp at_time,
         const std::vector<AckedPacket>& acked_packets,

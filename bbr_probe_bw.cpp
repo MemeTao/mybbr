@@ -28,7 +28,7 @@ void BbrProbeBandwidth::enter(time::Timestamp now,
     }
 }
 
-BbrMode BbrProbeBandwidth::OnCongestionEvent(
+BbrMode BbrProbeBandwidth::on_congestion_event(
     size_t prior_inflight, time::Timestamp at_time,
     const std::vector<AckedPacket>& acked_packets,
     const std::vector<LostPacket>& lost_packets,

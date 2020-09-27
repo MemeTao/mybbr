@@ -20,7 +20,7 @@ void BbrProbeRtt::enter(time::Timestamp now,
 }
 
 
-BbrMode BbrProbeRtt::OnCongestionEvent(
+BbrMode BbrProbeRtt::on_congestion_event(
     size_t,
     time::Timestamp ,
     const std::vector<AckedPacket>&,

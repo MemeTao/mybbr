@@ -23,7 +23,7 @@ public:
     void enter(time::Timestamp now,
                const BbrCongestionEvent* congestion_event);
 
-    BbrMode OnCongestionEvent(
+    BbrMode on_congestion_event(
         size_t prior_inflight,
         time::Timestamp at_time,
         const std::vector<AckedPacket>& acked_packets,
