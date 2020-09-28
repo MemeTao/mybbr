@@ -20,8 +20,13 @@ class BbrProbeRtt
 public:
     BbrProbeRtt(BbrAlgorithm* bbr,  BbrModel* model);
 
+    bool is_probing() const { return false;}
+
     void enter(time::Timestamp now,
                const BbrCongestionEvent* congestion_event);
+
+    void leave(time::Timestamp now,
+               const BbrCongestionEvent* congestion_event) {};
 
     BbrMode on_congestion_event(
         size_t prior_inflight,
@@ -30,7 +35,12 @@ public:
         const std::vector<LostPacket>& lost_packets,
         const BbrCongestionEvent& congestion_event);
 
+    BbrMode on_exit_quiescence(time::Timestamp quiescence_start_time,
+            time::Timestamp now);
+
     size_t inflight_target() const;
+
+    size_t cwnd_upper_limit() const;
 
 private:
     BbrAlgorithm* bbr_;

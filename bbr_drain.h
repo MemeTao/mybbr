@@ -20,7 +20,7 @@ public:
     bool is_probing() const {
         return false;
     }
-    size_t cwnd_limit() const;
+    size_t cwnd_upper_limit() const;
 
     BbrMode on_congestion_event(
         size_t prior_inflight,
@@ -28,6 +28,16 @@ public:
         const std::vector<AckedPacket>& acked_packets,
         const std::vector<LostPacket>& lost_packets,
         const BbrCongestionEvent& congestion_event);
+
+    void enter(time::Timestamp now,
+               const BbrCongestionEvent* congestion_event) {};
+
+    void leave(time::Timestamp now,
+               const BbrCongestionEvent* congestion_event) {};
+
+
+    BbrMode on_exit_quiescence(time::Timestamp,
+            time::Timestamp ) { return BbrMode::DRAIN;}
 
 private:
     size_t drain_target() const;

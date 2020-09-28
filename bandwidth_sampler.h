@@ -172,6 +172,7 @@ public:
 
     size_t total_bytes_acked() const { return total_bytes_acked_;}
     size_t total_bytes_lost() const { return total_bytes_lost_;}
+    size_t max_ack_height() const { return max_ack_height_tracker_.get();}
 private:
     SendTimeState on_pkt_lost(uint64_t seq_no, size_t bytes);
 

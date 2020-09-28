@@ -30,7 +30,7 @@ BbrModel::BbrModel(const Bbrparams& bbr_params,
      cwnd_gain_(cwnd_gain),
      pacing_gain_(pacing_gain),
      latest_max_bw_(0_mbps),
-     bw_lower_bound_(common::BandWidth::positive_infinity()),
+     bw_lo_(common::BandWidth::positive_infinity()),
      inflight_lo_(kDefaultInflightBytes),
      inflight_hi_(kDefaultInflightBytes)
 {
@@ -104,7 +104,7 @@ void BbrModel::on_congestion_event(
 
     if(congestion_event.bytes_lost > 0) {
         bytes_lost_in_round_ += congestion_event.bytes_lost;
-        lose_event_in_round_ ++;
+        lost_event_in_round_ ++;
     }
 
     //latest_max_bw_\latest_max_infligth_bytes_ only increased within a round
@@ -127,10 +127,21 @@ void BbrModel::on_congestion_event(
     }
 }
 
+void BbrModel::end_congestion_event(
+        uint64_t least_unacked_pkt_no,
+        const BbrCongestionEvent& congestion_event)
+{
+    if (congestion_event.end_of_round_trip) {
+        bytes_lost_in_round_ = 0;
+        lost_event_in_round_ = 0;
+    }
+    sampler_.remove_obsolete_pkts(least_unacked_pkt_no);
+}
+
 void BbrModel::restart_round()
 {
     bytes_lost_in_round_ = 0;
-    lose_event_in_round_ = 0;
+    lost_event_in_round_ = 0;
     round_counter_.restart();
 }
 
@@ -143,10 +154,10 @@ void BbrModel::adapt_lower_bounds(const BbrCongestionEvent& congestion_event)
     //TODO:log bounds change
     if(congestion_event.bytes_lost > 0)
     {
-        if(!bw_lower_bound_.is_valid()) {
-            bw_lower_bound_ = max_bw();
+        if(!bw_lo_.is_valid()) {
+            bw_lo_ = max_bw();
         }
-        bw_lower_bound_ = std::max(latest_max_bw_, bw_lower_bound_ * (1.0 - params_.beta));
+        bw_lo_ = std::max(latest_max_bw_, bw_lo_ * (1.0 - params_.beta));
         if(params_.ignore_inflight_lo) {
             return;
         }
@@ -211,6 +222,11 @@ bool BbrModel::cwnd_limited(const BbrCongestionEvent& congestion_event) const
     size_t prior_bytes_in_flight = congestion_event.bytes_in_flight +
                 congestion_event.bytes_acked + congestion_event.bytes_lost;
     return prior_bytes_in_flight >= congestion_event.prior_cwnd;
+}
+
+void BbrModel::postpone_min_rtt_timestamp(time::TimeDelta duration)
+{
+    rtt_filter_.force_update(min_rtt(), rtt_filter_.timestamp() + duration);
 }
 
 }

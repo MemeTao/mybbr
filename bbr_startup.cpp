@@ -75,4 +75,9 @@ void BbrStartupMode::Check_excessive_losses(
     }
 }
 
+size_t BbrStartupMode::cwnd_upper_limit() const
+{
+    return model_->inflight_lo();
+}
+
 }

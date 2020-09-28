@@ -53,7 +53,7 @@ public:
                const BbrCongestionEvent* congestion_event);
 
     void leave(time::Timestamp now,
-               const BbrCongestionEvent* congestion_event);
+               const BbrCongestionEvent* congestion_event) {};
 
     BbrMode on_congestion_event(
         size_t prior_inflight,
@@ -62,10 +62,15 @@ public:
         const std::vector<LostPacket>& lost_packets,
         const BbrCongestionEvent& congestion_event);
 
+    BbrMode on_exit_quiescence(time::Timestamp quiescence_start_time,
+            time::Timestamp now);
+
     bool is_probing() const {
         return cycle_.phase == CyclePhase::kProbeRefill ||
                 cycle_.phase == CyclePhase::kPorbeUp;
     }
+
+    size_t cwnd_upper_limit() const ;
 
 private:
     float pacing_gain(CyclePhase phase) const;

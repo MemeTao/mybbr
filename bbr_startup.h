@@ -19,9 +19,9 @@ class BbrStartupMode
 public:
     BbrStartupMode(BbrAlgorithm* bbr, BbrModel* model);
 
-    bool is_probing() const {
-        return true;
-    }
+    bool is_probing() const { return true;}
+
+    bool full_bw_reached() const { return full_bw_reached_;}
 
     BbrMode on_congestion_event(
         size_t prior_inflight,
@@ -29,6 +29,17 @@ public:
         const std::vector<AckedPacket>& acked_packets,
         const std::vector<LostPacket>& lost_packets,
         const BbrCongestionEvent& congestion_event);
+
+    void enter(time::Timestamp now,
+               const BbrCongestionEvent* congestion_event) {};
+
+    void leave(time::Timestamp now,
+               const BbrCongestionEvent* congestion_event) {};
+
+    size_t cwnd_upper_limit() const;
+
+    BbrMode on_exit_quiescence(time::Timestamp,
+            time::Timestamp ){ return BbrMode::STARTUP;}
 
 private:
     void check_full_bw_reached(const BbrCongestionEvent& congestion_event);

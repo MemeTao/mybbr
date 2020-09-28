@@ -39,10 +39,27 @@ BbrMode BbrProbeRtt::on_congestion_event(
             BbrMode::PROBE_BW : BbrMode::PROBE_RTT;
 }
 
+BbrMode BbrProbeRtt::on_exit_quiescence(
+        time::Timestamp /*quiescence_start_time*/,
+        time::Timestamp now)
+{
+    if (now > exit_time_) {
+        return BbrMode::PROBE_BW;
+    }
+    return BbrMode::PROBE_RTT;
+}
+
 size_t BbrProbeRtt::inflight_target() const
 {
     return model_->bdp(model_->max_bw(),
             bbr_->params().probe_rtt_inflight_target_bdp_fraction);
+}
+
+size_t BbrProbeRtt::cwnd_upper_limit() const
+{
+    size_t inflight_upper_bound =
+        std::min(model_->inflight_lo(), model_->inflight_hi_with_headroom());
+    return std::min(inflight_upper_bound, inflight_target());
 }
 }
 

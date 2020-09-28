@@ -111,6 +111,8 @@ struct Bbrparams
     //probe rtt:200ms
     time::TimeDelta probe_rtt_duration {200 * 1000};
     float probe_rtt_inflight_target_bdp_fraction = 0.5;
+
+    size_t min_cwnd = 4 * kDefaultTCPMSS;
 };
 
 // Information that are meaningful only when Bbr2Sender::OnCongestionEvent is
@@ -174,11 +176,13 @@ public:
             time::Timestamp at_time, bool need_retransmitted);
 
     void on_congestion_event(const std::vector<AckedPacket>& acked_pkts,
-            const std::vector<LostPacket>& acked_pkts,
+            const std::vector<LostPacket>& lost_pkts,
             BbrCongestionEvent& congestion_event,
             time::Timestamp at_time);
     void end_congestion_event(uint64_t least_unacked_pkt_no,
             const BbrCongestionEvent& congestion_event);
+
+    void postpone_min_rtt_timestamp(time::TimeDelta duration);
 
     bool is_inflight_too_high( const BbrCongestionEvent& congestion_event);
 
@@ -188,12 +192,14 @@ public:
 
     common::BandWidth max_bw() const{ return bandwidth_filter_.get();}
 
+    common::BandWidth estimated_bw() const { return std::min(max_bw(), bw_lo_);}
+
     size_t bdp(common::BandWidth bw, float gain = 1.0) const
     {
         return bw * (min_rtt() * gain);
     }
 
-    common::BandWidth bw_lower_bound() const { return bw_lower_bound_;}
+    common::BandWidth bw_lower_bound() const { return bw_lo_;}
 
     size_t loss_events_in_round() const{ return lose_event_in_round_;}
 
@@ -205,6 +211,9 @@ public:
 
     bool cwnd_limited( const BbrCongestionEvent& congestion_event) const;
 
+    size_t total_bytes_acked() const { return sampler_.total_bytes_acked();}
+
+    size_t max_ack_hegith() const { return sampler_.max_ack_height();}
 public:
     void set_inflight_hi(size_t inflight_hi){ inflight_hi_ = inflight_hi;}
 
@@ -219,6 +228,9 @@ public:
     void set_pacing_gain(float gain) { pacing_gain_ = gain;}
     void set_cwnd_gain(float gain) { cwnd_gain_ = gain;}
     void advance_bw_hi_filter() { bandwidth_filter_.advance();}
+
+    float pacing_gain() const { return pacing_gain_;}
+    float cwnd_gain() const { return cwnd_gain_;}
 
 private:
     void adapt_lower_bounds(const BbrCongestionEvent& congestion_event);
@@ -237,7 +249,7 @@ private:
     BandwidthSampler sampler_;
 
     size_t bytes_lost_in_round_ = 0;
-    size_t lose_event_in_round_ = 0;
+    size_t lost_event_in_round_ = 0;
 
     // Max bandwidth in the current round. Updated once per congestion event.
     common::BandWidth latest_max_bw_;
@@ -245,7 +257,7 @@ private:
     size_t latest_max_infligth_bytes_ = 0;
 
     // Max bandwidth of recent rounds. Updated once per round.
-    common::BandWidth bw_lower_bound_;
+    common::BandWidth bw_lo_;
     //recent rounds
     size_t inflight_lo_;
     size_t inflight_hi_;

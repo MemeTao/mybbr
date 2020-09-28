@@ -30,7 +30,7 @@ BbrMode BbrDrainMode::on_congestion_event(
     return BbrMode::DRAIN;
 }
 
-size_t BbrDrainMode::cwnd_limit() const
+size_t BbrDrainMode::cwnd_upper_limit() const
 {
     return model_->inflight_lo();
 }

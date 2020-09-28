@@ -75,6 +75,15 @@ BbrMode BbrProbeBandwidth::on_congestion_event(
     return switch_to_probe_rtt ? BbrMode::PROBE_RTT : BbrMode::PROBE_BW;
 }
 
+
+BbrMode BbrProbeBandwidth::on_exit_quiescence(
+        time::Timestamp quiescence_start_time,
+        time::Timestamp now)
+{
+    model_->postpone_min_rtt_timestamp(now - quiescence_start_time);
+    return BbrMode::PROBE_BW;
+}
+
 void BbrProbeBandwidth::enter_probe_down(bool probed_too_high,
         bool stopped_risky_probe, time::Timestamp now)
 {
@@ -395,5 +404,15 @@ float BbrProbeBandwidth::pacing_gain(CyclePhase phase) const
     default:
         return bbr_->params().probe_bw_default_pacing_gain;
     }
+}
+
+size_t BbrProbeBandwidth::cwnd_upper_limit() const
+{
+    size_t upper_limit =
+        std::min(model_->inflight_lo(), cycle_.phase == CyclePhase::kPorbeCruise
+                                            ? model_->inflight_hi_with_headroom()
+                                            : model_->inflight_hi());
+    //FIXME: do we need to avoid too low cwnd?
+    return upper_limit;
 }
 }
