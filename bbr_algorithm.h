@@ -29,6 +29,8 @@ public:
         const std::vector<AckedPacket>& acked_packets,
         const std::vector<LostPacket>& lost_packets);
 
+    size_t can_send(size_t bytes_inflight) const;
+
     size_t min_cwnd() const {return params_.min_cwnd;}
 
     size_t cwnd() const { return cur_cwnd_;}

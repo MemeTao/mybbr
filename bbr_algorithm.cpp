@@ -87,6 +87,11 @@ void BbrAlgorithm::on_congestion_event(
     }
 }
 
+size_t BbrAlgorithm::can_send(size_t bytes_inflight) const
+{
+    return bytes_inflight > cur_cwnd_ ? 0 : cur_cwnd_ - bytes_inflight;
+}
+
 void BbrAlgorithm::update_cwnd(size_t bytes_acked)
 {
     auto prior_cwnd = cur_cwnd_;
