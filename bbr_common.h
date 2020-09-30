@@ -7,6 +7,8 @@
 
 namespace bbr
 {
+namespace internal
+{
 struct AckedPacket
 {
     uint64_t seq_no = 0;
@@ -20,5 +22,5 @@ struct LostPacket
     size_t bytes = 0;
 };
 }
-
+}
 #endif

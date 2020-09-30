@@ -84,8 +84,8 @@ void BandwidthSampler::on_packet_sent(uint64_t seq_no, size_t bytes,
 }
 
 CongestionEventSample BandwidthSampler::on_congestion_event(time::Timestamp ack_time,
-        const std::vector<AckedPacket>& acked_pkts,
-        const std::vector<LostPacket>& lost_pkts,
+        const std::vector<internal::AckedPacket>& acked_pkts,
+        const std::vector<internal::LostPacket>& lost_pkts,
         common::BandWidth max_bw,
         common::BandWidth estimated_bw_upper_bound,
         int round_count)
@@ -94,7 +94,7 @@ CongestionEventSample BandwidthSampler::on_congestion_event(time::Timestamp ack_
 
     SendTimeState last_lost_packet_send_state;
 
-    for (const LostPacket& pkt : lost_pkts) {
+    for (const auto& pkt : lost_pkts) {
         SendTimeState send_state = on_pkt_lost(pkt.seq_no, pkt.bytes);
         if (send_state.is_valid) {
             last_lost_packet_send_state = send_state;

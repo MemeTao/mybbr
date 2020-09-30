@@ -161,8 +161,8 @@ public:
             size_t bytes_in_flight,
             time::Timestamp at_time, bool need_retransmite = true);
     CongestionEventSample on_congestion_event(time::Timestamp ack_time,
-            const std::vector<AckedPacket>& acked_pkts,
-            const std::vector<LostPacket>& lost_pkts,
+            const std::vector<internal::AckedPacket>& acked_pkts,
+            const std::vector<internal::LostPacket>& lost_pkts,
             common::BandWidth max_bw, common::BandWidth estimated_bw_upper_bound,
             int round_count);
     void on_pkt_neutered(uint64_t seq_no);

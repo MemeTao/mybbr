@@ -47,8 +47,8 @@ void BbrModel::on_pkt_sent(uint64_t seq_no, size_t pkt_size,
 }
 
 void BbrModel::on_congestion_event(
-        const std::vector<AckedPacket>& acked_pkts,
-        const std::vector<LostPacket>& lost_pkts,
+        const std::vector<internal::AckedPacket>& acked_pkts,
+        const std::vector<internal::LostPacket>& lost_pkts,
         BbrCongestionEvent& congestion_event,
         time::Timestamp at_time)
 {

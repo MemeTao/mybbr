@@ -67,7 +67,7 @@ BandwidthSample BandwidthSamplerTest::ack_pkt_inner(uint64_t seq_no)
 {
     size_t size = sent_pkts_.find(seq_no)->second;
     bytes_in_flight_ -= size;
-    bbr::AckedPacket acked_pkt{seq_no, size, clock_};
+    bbr::internal::AckedPacket acked_pkt{seq_no, size, clock_};
     auto cong_sample = sampler_.on_congestion_event(clock_, {acked_pkt},
             {}, max_bw_, bw_upper_bound_, round_count_);
     max_bw_ = std::max(cong_sample.sample_max_bandwidth, max_bw_);
@@ -85,7 +85,7 @@ bbr::SendTimeState BandwidthSamplerTest::lose_pkt(uint64_t seq_no)
 {
     size_t size = sent_pkts_.find(seq_no)->second;
     bytes_in_flight_ -= size;
-    bbr::LostPacket lost_pkt{seq_no, size};
+    bbr::internal::LostPacket lost_pkt{seq_no, size};
     auto sample = sampler_.on_congestion_event(clock_, {}, {lost_pkt},
             max_bw_, bw_upper_bound_, round_count_);
     EXPECT_TRUE(sample.last_packet_send_state.is_valid);
@@ -97,8 +97,8 @@ bbr::SendTimeState BandwidthSamplerTest::lose_pkt(uint64_t seq_no)
 bbr::CongestionEventSample BandwidthSamplerTest::on_congestion_event(
         std::set<uint64_t> ack, std::set<uint64_t> lost)
 {
-    std::vector<bbr::AckedPacket> acked_pkts;
-    std::vector<bbr::LostPacket> lost_pkts;
+    std::vector<bbr::internal::AckedPacket> acked_pkts;
+    std::vector<bbr::internal::LostPacket> lost_pkts;
     for(auto seq_no : ack) {
         auto size = sent_pkts_.find(seq_no)->second;
         acked_pkts.push_back({seq_no, size, clock_});
@@ -401,7 +401,7 @@ TEST_F(BandwidthSamplerTest, CongestionEventSampleDefaultValues) {
     // initial values for BandwidthSampler::OnCongestionEvent() to work.
     bbr::CongestionEventSample sample;
 
-    EXPECT_FALSE(sample.sample_max_bandwidth.is_valid());
+    EXPECT_EQ(sample.sample_max_bandwidth, 0_mbps);
     EXPECT_FALSE(sample.sample_is_app_limited);
     EXPECT_FALSE(sample.sample_rtt.is_valid());
     EXPECT_EQ(0u, sample.sample_max_inflight);

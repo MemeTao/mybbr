@@ -175,8 +175,8 @@ public:
     void on_pkt_sent(uint64_t seq_no, size_t pkt_size, size_t infight_bytes,
             time::Timestamp at_time, bool need_retransmitted);
 
-    void on_congestion_event(const std::vector<AckedPacket>& acked_pkts,
-            const std::vector<LostPacket>& lost_pkts,
+    void on_congestion_event(const std::vector<internal::AckedPacket>& acked_pkts,
+            const std::vector<internal::LostPacket>& lost_pkts,
             BbrCongestionEvent& congestion_event,
             time::Timestamp at_time);
     void end_congestion_event(uint64_t least_unacked_pkt_no,
@@ -201,7 +201,7 @@ public:
 
     common::BandWidth bw_lower_bound() const { return bw_lo_;}
 
-    size_t loss_events_in_round() const{ return lose_event_in_round_;}
+    size_t loss_events_in_round() const{ return lost_event_in_round_;}
 
     size_t inflight_lo() const { return inflight_lo_;}
 
