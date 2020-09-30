@@ -26,8 +26,8 @@ public:
     void on_congestion_event(
         size_t prior_inflight,
         time::Timestamp at_time,
-        const std::vector<AckedPacket>& acked_packets,
-        const std::vector<LostPacket>& lost_packets);
+        const std::vector<internal::AckedPacket>& acked_packets,
+        const std::vector<internal::LostPacket>& lost_packets);
 
     size_t can_send(size_t bytes_inflight) const;
 

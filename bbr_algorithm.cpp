@@ -40,8 +40,8 @@ void BbrAlgorithm::on_packet_sent(uint64_t pkt_no,
 void BbrAlgorithm::on_congestion_event(
     size_t prior_inflight,
     time::Timestamp at_time,
-    const std::vector<AckedPacket>& acked_packets,
-    const std::vector<LostPacket>& lost_packets)
+    const std::vector<internal::AckedPacket>& acked_packets,
+    const std::vector<internal::LostPacket>& lost_packets)
 {
     BbrCongestionEvent congestion_event;
     congestion_event.prior_cwnd = cur_cwnd_;

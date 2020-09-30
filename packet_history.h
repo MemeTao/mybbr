@@ -4,14 +4,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <map>
+#include <deque>
 #include <time/timestamp.h>
 
 namespace bbr
 {
-
 template <typename PacketType,
-    template<typename> class ContainerType = std::map>
+    template<typename Elem,
+        typename Allocator = std::allocator<Elem>>
+            class ContainerType = std::deque>
 class PacketHistory
 {
 public:
@@ -24,7 +25,7 @@ public:
 
     void insert(const PacketType& pkt);
 
-    const PacketType& find(uint64_t seq_no) const;
+    PacketType* find(uint64_t seq_no) const;
 
     size_t erase(uint64_t seq_no);
 
@@ -33,5 +34,6 @@ public:
 private:
     ContainerType<PacketType> buffer_;
 };
+
 }
 #endif
