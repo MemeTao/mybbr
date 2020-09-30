@@ -1,5 +1,5 @@
-#ifndef COMMON_SEQUENCE_WRPPER_H_
-#define COMMON_SEQUENCE_WRPPER_H_
+#ifndef BBR_COMMON_SEQUENCE_WRPPER_H_
+#define BBR_COMMON_SEQUENCE_WRPPER_H_
 
 #include <limits>
 #include <cstdint>

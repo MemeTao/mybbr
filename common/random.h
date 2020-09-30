@@ -1,5 +1,5 @@
-#ifndef COMMON_RANDOM_H_
-#define COMMON_RANDOM_H_
+#ifndef BBR_COMMON_RANDOM_H_
+#define BBR_COMMON_RANDOM_H_
 
 #include <stdint.h>
 #include <limits>
