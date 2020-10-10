@@ -10,29 +10,31 @@
 namespace bbr
 {
 template <typename PacketType,
-    template<typename Elem,
-        typename Allocator = std::allocator<Elem>>
-            class ContainerType = std::deque>
+    template<typename Elem>
+         class ContainerType>
 class PacketHistory
 {
 public:
     struct SentPkt {
-        bool valid = false;
-        uint64_t seq_no = 0;
-        size_t bytes = 0;
+        PacketType pkt;
         time::Timestamp sent_time;
     };
 
-    void insert(const PacketType& pkt);
+    void insert(uint64_t seq_no, SentPkt&& pkt) {
+        buffer_.emplace(seq_no, std::move(pkt));
+    }
 
-    PacketType* find(uint64_t seq_no) const;
+    SentPkt* find(uint64_t seq_no) {
+        return buffer_.get(seq_no);
+    }
 
-    size_t erase(uint64_t seq_no);
-
-    size_t erase(uint64_t begin, uint64_t end);
+    void erase(uint64_t seq_no) {
+        //TODO:
+        return;
+    }
 
 private:
-    ContainerType<PacketType> buffer_;
+    ContainerType<SentPkt> buffer_;
 };
 
 }

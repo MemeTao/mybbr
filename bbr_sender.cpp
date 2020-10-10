@@ -28,7 +28,9 @@ bool BbrSender::send_pkt(SendingPacket&& pkt)
     bool ret = socket_->send_pkt(std::move(pkt));
     bbr_.on_packet_sent(pkt.seq_no, pkt.size, bytes_inflight(),
             true, now);
-    //TODO: increase bytes_inflight
+    pkts_history_.insert(pkt.seq_no, SentPktType{pkt, now});
+
+    bytes_inflight_ += pkt.size;
 
     return ret;
 }
@@ -36,46 +38,53 @@ bool BbrSender::send_pkt(SendingPacket&& pkt)
 void BbrSender::on_pkt_ack(const AckedPacket& pkt)
 {
     auto now = time::Timestamp::now();
+    size_t prior_bytes_infligth = bytes_inflight();
     auto lost_nos = loss_detect_.on_pkt_ack(pkt);
 
+    size_t lost_bytes = 0;
     std::vector<internal::LostPacket> lost_pkts;
     for(auto lost_no : lost_nos) {
         auto lost = pkts_history_.find(lost_no);
-        if(lost == nullptr) {
-            //log error
-            continue;
-        }
-        lost_pkts.push_back({lost->seq_no, lost->size});
+        assert(lost != nullptr);
+        lost_pkts.push_back({lost->pkt.seq_no, lost->pkt.size});
+        lost_bytes += lost->pkt.size;
     }
+    assert(bytes_inflight_ >= lost_bytes);
+    bytes_inflight_ -= lost_bytes;
 
     auto sending_pkt = pkts_history_.find(pkt.seq_no);
-    if(!sending_pkt || sending_pkt->seq_no != pkt.seq_no) {
+    if(!sending_pkt || sending_pkt->pkt.seq_no != pkt.seq_no) {
         //log error
         return ;
     }
-    internal::AckedPacket acked_pkt{pkt.seq_no, sending_pkt->size, pkt.arrival_time};
-    bbr_.on_congestion_event(bytes_inflight(), now, {acked_pkt}, lost_pkts);
+    assert(bytes_inflight_ >= sending_pkt->pkt.size);
+    bytes_inflight_ -= sending_pkt->pkt.size;
+
+    internal::AckedPacket acked_pkt{pkt.seq_no, sending_pkt->pkt.size, pkt.arrival_time};
+    bbr_.on_congestion_event(prior_bytes_infligth, now, {acked_pkt}, lost_pkts);
 
     check_after_acked();
     //TODO: erase thoes pkts on 'packethisotry' that will not be used anymore
 }
 
-
 void BbrSender::on_pkts_ack(const std::vector<AckedTrunk>& trunks)
 {
     auto now = time::Timestamp::now();
+    size_t prior_bytes_infligth = bytes_inflight();
     auto lost_nos = loss_detect_.on_pkts_ack(trunks);
 
+    size_t lost_bytes = 0;
     std::vector<internal::LostPacket> lost_pkts;
     for(auto lost_no : lost_nos) {
         auto lost = pkts_history_.find(lost_no);
-        if(lost == nullptr) {
-            //log error
-            assert(false);
-            continue;
-        }
-        lost_pkts.push_back({lost->seq_no, lost->size});
+        assert(lost != nullptr);
+        lost_pkts.push_back({lost->pkt.seq_no, lost->pkt.size});
+        lost_bytes += lost->pkt.size;
     }
+    assert(bytes_inflight >= lost_bytes);
+    bytes_inflight_ -= lost_bytes;
+
+    size_t acked_bytes = 0;
     std::vector<internal::AckedPacket> acked_pkts;
     for(const auto& trunk : trunks) {
         assert(trunk.seq_no_end >= trunk.seq_no_begin);
@@ -85,16 +94,19 @@ void BbrSender::on_pkts_ack(const std::vector<AckedTrunk>& trunks)
                 seq_no <= trunk.seq_no_end; seq_no ++)
         {
             auto acked = pkts_history_.find(seq_no);
+            //if we received fake ack-frame, ignore it
             if(acked == nullptr) {
-                //log error
-                assert(false);
                 continue;
             }
-            acked_pkts.push_back({acked->seq_no, acked->size,
+            acked_pkts.push_back({acked->pkt.seq_no, acked->pkt.size,
                 trunk.arrival_times[seq_no-trunk.seq_no_begin]});
+            acked_bytes += acked->pkt.size;
         }
     }
-    bbr_.on_congestion_event(bytes_inflight(), now, acked_pkts, lost_pkts);
+    assert(bytes_inflight >= acked_bytes);
+    bytes_inflight_ -= acked_bytes;
+
+    bbr_.on_congestion_event(prior_bytes_infligth, now, acked_pkts, lost_pkts);
 
     check_after_acked();
     //TODO: erase thoes pkts on 'packethisotry' that will not be used anymore

@@ -7,6 +7,7 @@
 #include <packet_buffer.h>
 #include <loss_detect.h>
 #include <bbr_algorithm.h>
+#include <common/circular_buffer.h>
 
 namespace bbr
 {
@@ -39,15 +40,24 @@ private:
 
 private:
     void check_after_acked();
-    size_t bytes_inflight() const;
+    size_t bytes_inflight() const {
+        return bytes_inflight_;
+    }
 
     BbrAlgorithm bbr_;
     LossDetect loss_detect_;
 
-    PacketHistory<SendingPacket> pkts_history_; //buffered all sent but not acked packets
+    PacketHistory<SendingPacket,
+    common::CircularBuffer> pkts_history_; //buffered all sent but not acked packets
+
+    using SentPktType = PacketHistory<SendingPacket,
+            common::CircularBuffer>::SentPkt;
+
     PacketBuffer pkts_buffer_; //buffered sending packets
 
     PacketSender* socket_;
+
+    size_t bytes_inflight_ = 0; //total sent but didn't acked
 };
 }
 #endif

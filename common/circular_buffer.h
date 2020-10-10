@@ -79,6 +79,9 @@ public:
 
     //[form, to)
     void erase(uint64_t from, uint64_t to) {
+        if(to <= from) {
+            return;
+        }
         size_t pos = hash(from);
         auto iter = trunk(pos);
         if(iter == elems_.end()) {
